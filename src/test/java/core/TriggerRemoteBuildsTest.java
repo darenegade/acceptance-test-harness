@@ -62,4 +62,21 @@ public class TriggerRemoteBuildsTest extends AbstractJUnitTest {
         trigger.startBuild().shouldSucceed();
         subject.getLastBuild().shouldSucceed();
     }
+
+    @Test
+    public void triggerBuildRemotelySimple(){
+        FreeStyleJob subject = jenkins.jobs.create();
+        subject.configure();
+        subject.save();
+
+        FreeStyleJob trigger = jenkins.jobs.create();
+        trigger.configure();
+        trigger.addShellStep(
+            "curl " + subject.url.toString() + "build"
+        );
+        trigger.save();
+
+        trigger.startBuild();
+        subject.getLastBuild().shouldSucceed();
+    }
 }

@@ -211,7 +211,7 @@ public class FreestyleJobTest extends AbstractJUnitTest {
         List<WebElement> permaLinks = driver.findElements(By.className("permalink-item"));
 
         assertThat(permaLinks.size(), greaterThan(0));
-        assertNotNull(driver.findElement(By.cssSelector("a[href*='lastSuccessfulBuild/']")));
+        j.getLastBuild().shouldSucceed();
 
         driver.findElement(By.cssSelector("a[href*='lastBuild/']")).click();
 
