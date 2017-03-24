@@ -2,35 +2,25 @@ package core;
 
 import org.jenkinsci.test.acceptance.junit.AbstractJUnitTest;
 import org.jenkinsci.test.acceptance.junit.Wait;
-import org.jenkinsci.test.acceptance.po.Artifact;
-import org.jenkinsci.test.acceptance.po.ArtifactArchiver;
-import org.jenkinsci.test.acceptance.po.Build;
-import org.jenkinsci.test.acceptance.po.BuildWithParameters;
-import org.jenkinsci.test.acceptance.po.FreeStyleJob;
-import org.jenkinsci.test.acceptance.po.Job;
-import org.jenkinsci.test.acceptance.po.ListView;
-import org.jenkinsci.test.acceptance.po.ShellBuildStep;
-import org.jenkinsci.test.acceptance.po.StringParameter;
-import org.jenkinsci.test.acceptance.po.TimerTrigger;
+import org.jenkinsci.test.acceptance.po.*;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebElement;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.equalTo;
-import static org.jenkinsci.test.acceptance.Matchers.containsRegexp;
-import static org.jenkinsci.test.acceptance.Matchers.hasContent;
-import static org.jenkinsci.test.acceptance.Matchers.pageObjectDoesNotExist;
-import static org.jenkinsci.test.acceptance.Matchers.pageObjectExists;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.jenkinsci.test.acceptance.Matchers.*;
+import static org.junit.Assert.*;
 
 public class FreestyleJobTest extends AbstractJUnitTest {
 
@@ -188,6 +178,52 @@ public class FreestyleJobTest extends AbstractJUnitTest {
         assertThat(first.getConsole(), containsString("Started by timer"));
 
         assertThat(j.build(3), pageObjectDoesNotExist());
+    }
+
+    @Test
+    public void jobnameCorrect() throws Exception {
+        FreeStyleJob j = jenkins.jobs.create(FreeStyleJob.class);
+        j.configure();
+        j.description("Ganz Toll!!!",false);
+
+        assertThat(
+            driver.findElement(By.id("description")).getText(),
+            containsString("Ganz Toll!!!")
+        );
+    }
+
+    @Test
+    public void validatePermlinks() throws Exception {
+        FreeStyleJob j = jenkins.jobs.create(FreeStyleJob.class);
+        driver.manage().timeouts().pageLoadTimeout(5, TimeUnit.SECONDS);
+        j.configure();
+        j.save();
+
+        Build first = j.startBuild();
+        new Wait<>(first)
+            .withTimeout(70, TimeUnit.SECONDS) // Wall-clock time
+            .until(pageObjectExists())
+        ;
+
+        jenkins.visit(j.getCurrentUrl());
+
+
+        List<WebElement> permaLinks = driver.findElements(By.className("permalink-item"));
+
+        assertThat(permaLinks.size(), greaterThan(0));
+        assertNotNull(driver.findElement(By.cssSelector("a[href*='lastSuccessfulBuild/']")));
+
+        driver.findElement(By.cssSelector("a[href*='lastBuild/']")).click();
+
+        WebElement erfolgreich = driver.findElement(By.className("build-caption"));
+        assertThat(erfolgreich.getText(), containsString("Build #1"));
+
+        assertThat(driver.findElement(By.tagName("tbody")).getText(), containsString("No changes"));
+
+        WebElement iconLink = erfolgreich.findElement(By.className("icon-blue"));
+        assertThat(iconLink.getAttribute("tooltip"), containsString("Success"));
+
+
     }
 
     @Test
