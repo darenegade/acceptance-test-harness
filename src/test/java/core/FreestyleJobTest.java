@@ -201,10 +201,7 @@ public class FreestyleJobTest extends AbstractJUnitTest {
         j.save();
 
         Build first = j.startBuild();
-        new Wait<>(first)
-            .withTimeout(70, TimeUnit.SECONDS) // Wall-clock time
-            .until(pageObjectExists())
-        ;
+        first.waitUntilFinished();
 
         j.open(); //Refresh to get Links
         List<WebElement> permaLinks = driver.findElements(By.className("permalink-item"));
