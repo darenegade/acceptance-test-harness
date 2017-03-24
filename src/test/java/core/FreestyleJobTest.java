@@ -183,12 +183,13 @@ public class FreestyleJobTest extends AbstractJUnitTest {
     @Test
     public void jobnameCorrect() throws Exception {
         FreeStyleJob j = jenkins.jobs.create(FreeStyleJob.class);
-        j.configure();
-        j.description("Ganz Toll!!!",false);
+
+        String description = "Ganz Toll!!!";
+        j.description(description,false); //Saves automatically
 
         assertThat(
             driver.findElement(By.id("description")).getText(),
-            containsString("Ganz Toll!!!")
+            containsString(description)
         );
     }
 
@@ -205,9 +206,7 @@ public class FreestyleJobTest extends AbstractJUnitTest {
             .until(pageObjectExists())
         ;
 
-        jenkins.visit(j.getCurrentUrl());
-
-
+        j.open(); //Refresh to get Links
         List<WebElement> permaLinks = driver.findElements(By.className("permalink-item"));
 
         assertThat(permaLinks.size(), greaterThan(0));
@@ -215,15 +214,13 @@ public class FreestyleJobTest extends AbstractJUnitTest {
 
         driver.findElement(By.cssSelector("a[href*='lastBuild/']")).click();
 
-        WebElement erfolgreich = driver.findElement(By.className("build-caption"));
-        assertThat(erfolgreich.getText(), containsString("Build #1"));
+        WebElement successCaption = driver.findElement(By.className("build-caption"));
+        assertThat(successCaption.getText(), containsString("Build #1"));
 
         assertThat(driver.findElement(By.tagName("tbody")).getText(), containsString("No changes"));
 
-        WebElement iconLink = erfolgreich.findElement(By.className("icon-blue"));
+        WebElement iconLink = successCaption.findElement(By.className("icon-blue"));
         assertThat(iconLink.getAttribute("tooltip"), containsString("Success"));
-
-
     }
 
     @Test
