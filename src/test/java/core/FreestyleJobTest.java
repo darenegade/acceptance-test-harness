@@ -194,14 +194,13 @@ public class FreestyleJobTest extends AbstractJUnitTest {
     }
 
     @Test
-    public void validatePermlinks() throws Exception {
+    public void validatePermalinks() throws Exception {
         FreeStyleJob j = jenkins.jobs.create(FreeStyleJob.class);
         driver.manage().timeouts().pageLoadTimeout(5, TimeUnit.SECONDS);
         j.configure();
         j.save();
 
-        Build first = j.startBuild();
-        first.waitUntilFinished();
+        j.startBuild().waitUntilFinished();
 
         j.open(); //Refresh to get Links
         List<WebElement> permaLinks = driver.findElements(By.className("permalink-item"));
