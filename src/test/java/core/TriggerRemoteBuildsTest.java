@@ -76,7 +76,7 @@ public class TriggerRemoteBuildsTest extends AbstractJUnitTest {
         );
         trigger.save();
 
-        trigger.startBuild();
+        trigger.startBuild().waitUntilFinished();
         subject.getLastBuild().shouldSucceed();
     }
 }
